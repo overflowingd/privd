@@ -59,8 +59,14 @@ func Init(cfg *conf.Config, conn *logic.Conn) error {
 				return fmt.Errorf("%w: %v", logic.ErrSetNotFound, err)
 			}
 
+			trustedHosts6, err := conn.GetSetByName(table, cfg.Sets.TrustedHosts6)
+			if err != nil {
+				return fmt.Errorf("%w: %v", logic.ErrSetNotFound, err)
+			}
+
 			conn.Table = table
 			conn.TrustedHosts = trustedHosts
+			conn.TrustedHosts6 = trustedHosts6
 			return nil
 		}
 	}

@@ -16,7 +16,8 @@ type Config struct {
 }
 
 type Sets struct {
-	TrustedHosts string `yaml:"trusted-hosts" env:"PRIVD_TRUSTED_HOSTS"`
+	TrustedHosts  string `yaml:"trusted-hosts" env:"PRIVD_TRUSTED_HOSTS"`
+	TrustedHosts6 string `yaml:"trusted-hosts6" env:"PRIVD_TRUSTED_HOSTS6"`
 }
 
 type Srv struct {

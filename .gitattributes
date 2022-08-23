@@ -1,0 +1,6 @@
+* text=auto
+
+*.go text eol=lf
+
+.git-commit-message-template export-ignore
+.mailmap            export-ignore

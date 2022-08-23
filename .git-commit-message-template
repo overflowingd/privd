@@ -1,0 +1,16 @@
+
+# `git config commit.template .git-commit-message-template`
+# title. summary, imperative, start upper case, don't end with a period
+# no more than 50 chars. #### 50 chars is here:  #
+
+# body. "what" and "why" (not "how").
+# wrap at 72 chars. ################################## which is here:->#
+
+# if necessary uncomment and fillup one or more of this lines
+# co-authored-by: name <example@example.com>
+# resolves   = URLs to bugs or issues resolved by this commit
+
+# to integrate this commit message template with your git
+# type the following command in your command line:
+
+# see https://git-scm.com/docs/git-commit/2.10.5#Documentation/git-commit.txt---templateltfilegt

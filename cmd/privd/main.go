@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ilyakaznacheev/cleanenv"
 	"ovfl.io/overflowingd/privd/pkg/conf"
+	"ovfl.io/overflowingd/privd/pkg/conf/sets"
 	"ovfl.io/overflowingd/privd/pkg/handler"
 	"ovfl.io/overflowingd/privd/pkg/logic"
 	"ovfl.io/overflowingd/privd/pkg/srv"
@@ -31,7 +32,7 @@ func ConfigPath() string {
 		return path
 	}
 
-	return conf.DefaultConfigPath
+	return conf.DefaultPath
 }
 
 func Config(path string) (*conf.Config, error) {
@@ -39,6 +40,14 @@ func Config(path string) (*conf.Config, error) {
 
 	if err := cleanenv.ReadConfig(path, cnf); err != nil {
 		return nil, err
+	}
+
+	cnf.Table = conf.Table
+	cnf.Sets = &conf.Sets{
+		Ns:              sets.Nameservers,
+		TrustedHosts:    sets.TrustedHosts,
+		TrustedHosts6:   sets.TrustedHosts6,
+		NontunneledNets: sets.NontunneledNets,
 	}
 
 	return cnf, nil

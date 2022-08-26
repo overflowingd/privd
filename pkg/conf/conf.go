@@ -1,11 +1,15 @@
 package conf
 
 const (
-	DefaultConfigPath = ".cfg.yml"
+	DefaultPath = "cfg.yml"
 )
 
 const (
 	EnvConfigPath = "CFG_PATH"
+)
+
+const (
+	Table = "bd1ae1fc24d1d1e9c3e864a79f176c56"
 )
 
 type Config struct {
@@ -16,8 +20,10 @@ type Config struct {
 }
 
 type Sets struct {
-	TrustedHosts  string `yaml:"trusted-hosts" env:"PRIVD_TRUSTED_HOSTS"`
-	TrustedHosts6 string `yaml:"trusted-hosts6" env:"PRIVD_TRUSTED_HOSTS6"`
+	Ns              string
+	TrustedHosts    string
+	TrustedHosts6   string
+	NontunneledNets string
 }
 
 type Srv struct {

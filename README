@@ -1,0 +1,5 @@
+privd (currently at development state)
+
+Or privacy daemon. The idea behind is to create a client-side service to handle
+some painful tasks like firewall and routing configuration to provide an simple way
+for building private networking through (or without) your tunnels.

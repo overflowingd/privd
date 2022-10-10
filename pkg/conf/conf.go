@@ -9,7 +9,7 @@ const (
 )
 
 const (
-	Table = "bd1ae1fc24d1d1e9c3e864a79f176c56"
+	Table = "5ddac5c220164b2f092fbf19c8ae1796"
 )
 
 type Config struct {

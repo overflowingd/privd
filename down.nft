@@ -1,0 +1,7 @@
+add table netdev e275b
+flush table netdev e275b
+delete table netdev e275b
+
+add table inet f1e4d
+flush table inet f1e4d
+delete table inet f1e4d

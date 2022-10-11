@@ -1,3 +1,4 @@
+- networking profiles
 - enable routing the whole networking through anonymization/privacy services on daemon startup
 - proxy, filter networking between user/system and anonymization/privacy services
 - systemd unit

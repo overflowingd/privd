@@ -1,5 +1,8 @@
-privd (currently at development state)
+privd
 
-Or privacy daemon. The idea behind is to create a client-side service to handle
-some painful tasks like firewall and routing configuration to provide an simple way
-for building private networking through (or without) your tunnels.
+Is a system daemon that integrates with a set of system features and user applications
+to provide full privacy for it's user.
+
+Current features:
+- integrated with nftables to block by default whole untrusted networking communications
+- restful http api for service configuration and control

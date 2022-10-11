@@ -11,6 +11,7 @@
 /cmd/test/
 
 /privd
+cnf.yml
 
 __debug_bin
 

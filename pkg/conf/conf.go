@@ -1,7 +1,7 @@
 package conf
 
 const (
-	DefaultPath = ".cnf.yml"
+	DefaultPath = "cnf.yml"
 )
 
 const (
@@ -9,11 +9,17 @@ const (
 )
 
 type Config struct {
-	Tables       *Tables   `yaml:"tables"`
-	Sets         *Sets     `yaml:"sets"`
 	Srv          *Srv      `yaml:"srv"`
 	Resolver     *Resolver `yaml:"resolver"`
-	Ip4Whitelist []string  `yaml:"ip4_whitel"`
+	Nft          *Nft      `yaml:"nft"`
+	Ip4Whitelist []string  `yaml:"ip4-whitel"`
+	Tables       *Tables
+	Sets         *Sets
+}
+
+type Nft struct {
+	RulesUp   string `yaml:"rules-up"`
+	RulesDown string `yaml:"rules-down"`
 }
 
 type Tables struct {

@@ -9,14 +9,29 @@ import (
 type Conn struct {
 	*nftables.Conn
 
-	TableInet       *nftables.Table
-	Ip4WhitelistSet *nftables.Set
+	ready        bool
+	inet         *nftables.Table
+	ip4Whitelist *nftables.Set
 }
 
 func New() *Conn {
 	return &Conn{
 		Conn: &nftables.Conn{},
 	}
+}
+
+func (c *Conn) Init(inet *nftables.Table, ip4whitel *nftables.Set) {
+	if inet == nil || ip4whitel == nil {
+		panic("conn: init attempt with nil args")
+	}
+
+	c.inet = inet
+	c.ip4Whitelist = ip4whitel
+	c.ready = true
+}
+
+func (c *Conn) Ready() bool {
+	return c.ready
 }
 
 func (c *Conn) WhitelistIPs(ips ...net.IP) error {
@@ -40,7 +55,7 @@ func (c *Conn) WhitelistIPs(ips ...net.IP) error {
 	}
 
 	if len(elements) > 0 {
-		if err := c.SetAddElements(c.Ip4WhitelistSet, elements); err != nil {
+		if err := c.SetAddElements(c.ip4Whitelist, elements); err != nil {
 			return err
 		}
 	}

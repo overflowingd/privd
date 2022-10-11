@@ -1,0 +1,6 @@
+srv:
+  listen: ":8900"
+resolver:
+  max-workers: 10
+  min-workers: 1
+ip4_whitel:

@@ -9,9 +9,8 @@ import (
 type Conn struct {
 	*nftables.Conn
 
-	Table         *nftables.Table
-	TrustedHosts  *nftables.Set
-	TrustedHosts6 *nftables.Set
+	TableInet       *nftables.Table
+	Ip4WhitelistSet *nftables.Set
 }
 
 func New() *Conn {
@@ -20,7 +19,7 @@ func New() *Conn {
 	}
 }
 
-func (c *Conn) AddTrustedHosts(ips ...net.IP) error {
+func (c *Conn) WhitelistIPs(ips ...net.IP) error {
 	var ipsLen = len(ips)
 	if ipsLen < 1 {
 		return nil
@@ -41,29 +40,22 @@ func (c *Conn) AddTrustedHosts(ips ...net.IP) error {
 	}
 
 	if len(elements) > 0 {
-		if err := c.SetAddElements(c.TrustedHosts, elements); err != nil {
+		if err := c.SetAddElements(c.Ip4WhitelistSet, elements); err != nil {
 			return err
 		}
 	}
 
 	if len(elements6) > 0 {
-		if err := c.SetAddElements(c.TrustedHosts6, elements6); err != nil {
-			return err
-		}
+		return ErrIp6NotSupported
 	}
 
 	return nil
 }
 
-func (c *Conn) IP(addr string) net.IP {
-	ip := net.ParseIP(addr)
-	if ip == nil {
-		return nil
+func (c *Conn) Flushing(fn func(*Conn) error) error {
+	if err := fn(c); err != nil {
+		return err
 	}
 
-	if ip.To4() == nil {
-		return ip.To16()
-	}
-
-	return ip.To4()
+	return c.Flush()
 }

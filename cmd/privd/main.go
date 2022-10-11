@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ilyakaznacheev/cleanenv"
 	"ovfl.io/overflowingd/privd/pkg/conf"
-	"ovfl.io/overflowingd/privd/pkg/conf/sets"
 	"ovfl.io/overflowingd/privd/pkg/handler"
 	"ovfl.io/overflowingd/privd/pkg/logic"
 	"ovfl.io/overflowingd/privd/pkg/srv"
@@ -18,10 +17,10 @@ import (
 func Handler(conn *logic.Conn, resolver *logic.Resolver) *gin.Engine {
 	s := gin.Default()
 
-	hosts := handler.NewHosts(conn, resolver)
+	hosts := handler.NewIp4(conn, resolver)
 	{
 		gr := s.Group("/v1")
-		gr.POST("hosts/trusted", hosts.AddTrusted)
+		gr.POST("ip4/whitelists", hosts.Whitelist)
 	}
 
 	return s
@@ -42,41 +41,64 @@ func Config(path string) (*conf.Config, error) {
 		return nil, err
 	}
 
-	cnf.Table = conf.Table
+	cnf.Tables = &conf.Tables{
+		Inet: logic.TableInet,
+	}
+
 	cnf.Sets = &conf.Sets{
-		Ns:              sets.Nameservers,
-		TrustedHosts:    sets.TrustedHosts,
-		TrustedHosts6:   sets.TrustedHosts6,
-		NontunneledNets: sets.NontunneledNets,
+		Ip4Whitelist: logic.Ip4WhitelistSet,
 	}
 
 	return cnf, nil
 }
 
-func Init(cfg *conf.Config, conn *logic.Conn) error {
+func Init(cnf *conf.Config, conn *logic.Conn, resolver *logic.Resolver) error {
 	tables, err := conn.ListTables()
 	if err != nil {
 		return err
 	}
 
 	for i := range tables {
-		if tables[i].Name == cfg.Table {
+		if tables[i].Name == cnf.Tables.Inet {
 			table := tables[i]
 
-			trustedHosts, err := conn.GetSetByName(table, cfg.Sets.TrustedHosts)
+			ip4Whitelist, err := conn.GetSetByName(table, cnf.Sets.Ip4Whitelist)
 			if err != nil {
 				return fmt.Errorf("%w: %v", logic.ErrSetNotFound, err)
 			}
 
-			trustedHosts6, err := conn.GetSetByName(table, cfg.Sets.TrustedHosts6)
-			if err != nil {
-				return fmt.Errorf("%w: %v", logic.ErrSetNotFound, err)
-			}
-
-			conn.Table = table
-			conn.TrustedHosts = trustedHosts
-			conn.TrustedHosts6 = trustedHosts6
+			conn.TableInet = table
+			conn.Ip4WhitelistSet = ip4Whitelist
 			return nil
+		}
+	}
+
+	ips, domains := logic.SplitHosts(cnf.Ip4Whitelist)
+
+	if err := conn.WhitelistIPs(ips...); err != nil {
+		if err != logic.ErrIp6NotSupported {
+			return err
+		}
+	}
+
+	if err := conn.Flush(); err != nil {
+		return err
+	}
+
+	if len(domains) > 0 {
+		resolved, err := resolver.Resolve(domains)
+		if err != nil {
+			return err
+		}
+
+		if err := conn.WhitelistIPs(resolved...); err != nil {
+			if err != logic.ErrIp6NotSupported {
+				return err
+			}
+		}
+
+		if err := conn.Flush(); err != nil {
+			return err
 		}
 	}
 
@@ -90,14 +112,14 @@ func main() {
 	}
 
 	conn := logic.New()
+	resolverPool := pond.New(conf.Resolver.MaxWorkers, conf.Resolver.MaxWorkers, pond.MinWorkers(conf.Resolver.MinWorkers))
+	resolver := logic.NewResolver(resolverPool)
 
-	if err := Init(conf, conn); err != nil {
+	if err := Init(conf, conn, resolver); err != nil {
 		log.Fatalf("init: %v", err)
 	}
 
-	resolverPool := pond.New(conf.Resolver.MaxWorkers, conf.Resolver.MaxWorkers, pond.MinWorkers(conf.Resolver.MinWorkers))
-
-	if err := srv.Start(conf.Srv.Listen, Handler(conn, logic.NewResolver(resolverPool))); err != nil {
+	if err := srv.Start(conf.Srv.Listen, Handler(conn, resolver)); err != nil {
 		log.Fatalf("srv.start: %v", err)
 	}
 }

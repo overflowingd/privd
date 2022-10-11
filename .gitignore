@@ -6,8 +6,6 @@
 !/.gitattributes
 !/.*.dist
 
-/cfg.yml
-
 /cmd/*/main
 /cmd/*/.*
 /cmd/test/

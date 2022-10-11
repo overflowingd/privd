@@ -1,29 +1,27 @@
 package conf
 
 const (
-	DefaultPath = "cfg.yml"
+	DefaultPath = ".cnf.yml"
 )
 
 const (
-	EnvConfigPath = "CFG_PATH"
-)
-
-const (
-	Table = "5ddac5c220164b2f092fbf19c8ae1796"
+	EnvConfigPath = "CNF_PATH"
 )
 
 type Config struct {
-	Table    string    `yaml:"table" env:"PRIVD_NFTABLE"`
-	Sets     *Sets     `yaml:"sets"`
-	Srv      *Srv      `yaml:"srv"`
-	Resolver *Resolver `yaml:"resolver"`
+	Tables       *Tables   `yaml:"tables"`
+	Sets         *Sets     `yaml:"sets"`
+	Srv          *Srv      `yaml:"srv"`
+	Resolver     *Resolver `yaml:"resolver"`
+	Ip4Whitelist []string  `yaml:"ip4_whitel"`
+}
+
+type Tables struct {
+	Inet string
 }
 
 type Sets struct {
-	Ns              string
-	TrustedHosts    string
-	TrustedHosts6   string
-	NontunneledNets string
+	Ip4Whitelist string
 }
 
 type Srv struct {

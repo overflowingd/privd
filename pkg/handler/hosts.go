@@ -1,26 +1,25 @@
 package handler
 
 import (
-	"net"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"ovfl.io/overflowingd/privd/pkg/logic"
 )
 
-type Hosts struct {
+type Ip4 struct {
 	conn     *logic.Conn
 	resolver *logic.Resolver
 }
 
-func NewHosts(conn *logic.Conn, resolver *logic.Resolver) *Hosts {
-	return &Hosts{
+func NewIp4(conn *logic.Conn, resolver *logic.Resolver) *Ip4 {
+	return &Ip4{
 		conn:     conn,
 		resolver: resolver,
 	}
 }
 
-func (h *Hosts) AddTrusted(ctx *gin.Context) {
+func (r *Ip4) Whitelist(ctx *gin.Context) {
 	items := make([]string, 0)
 
 	if err := ctx.BindJSON(&items); err != nil {
@@ -28,35 +27,29 @@ func (h *Hosts) AddTrusted(ctx *gin.Context) {
 		return
 	}
 
-	hosts := make([]string, 0, len(items))
-	ips := make([]net.IP, 0, len(items))
+	ips, domains := logic.SplitHosts(items)
 
-	for _, item := range items {
-		if ip := h.conn.IP(item); ip != nil {
-			ips = append(ips, ip)
-			continue
-		}
-
-		hosts = append(hosts, item)
-	}
-
-	addrs, err := h.resolver.Resolve(hosts)
+	resolved, err := r.resolver.Resolve(domains)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	for _, addr := range addrs {
-		ips = append(ips, h.conn.IP(addr))
-	}
+	ips = append(ips, resolved...)
 
-	if err := h.conn.AddTrustedHosts(ips...); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
-		return
-	}
+	{
+		err := r.conn.Flushing(func(c *logic.Conn) error {
+			err := c.WhitelistIPs(ips...)
+			if err != logic.ErrIp6NotSupported {
+				return err
+			}
 
-	if err := h.conn.Flush(); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
-		return
+			return nil
+		})
+
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			return
+		}
 	}
 }

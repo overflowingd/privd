@@ -1,7 +1,7 @@
 package conf
 
 const (
-	DefaultPath = "cnf.yml"
+	DefaultPath = ".privd.yml"
 )
 
 const (
